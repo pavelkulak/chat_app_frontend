@@ -16,6 +16,13 @@ export const MessageInput: FC<MessageInputProps> = ({ chatId, onSend }) => {
         placeholder="type your message"
         value={text}
         onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onSend(text);
+            setText("");
+          }
+        }}
       />
       <Button
         onClick={() => {
