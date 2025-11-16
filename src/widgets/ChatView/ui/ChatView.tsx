@@ -64,11 +64,28 @@ export const ChatView: FC<ChatViewProps> = ({ chat, onBack }) => {
   useEffect(() => {
     if (!chat) return;
 
-    // присоединяемся к чату
-    socket.emit("chat:join", String(chat.id));
+    const joinChat = () => {
+      console.log(
+        "[SOCKET] Joining chat:",
+        chat.id,
+        "Connected:",
+        socket.connected
+      );
+      socket.emit("chat:join", String(chat.id));
+    };
+
+    // Если socket уже подключен, присоединяемся сразу
+    if (socket.connected) {
+      joinChat();
+    } else {
+      // Если не подключен, ждем события connect
+      console.log("[SOCKET] Waiting for connection...");
+      socket.once("connect", joinChat);
+    }
 
     // слушаем новые сообщения
     const handleNewMessage = (message: any) => {
+      console.log("[SOCKET] New message received:", message);
       setMessages((prev) => [...prev, message]);
     };
 
@@ -76,7 +93,10 @@ export const ChatView: FC<ChatViewProps> = ({ chat, onBack }) => {
 
     return () => {
       socket.off("chat:message", handleNewMessage);
-      socket.emit("chat:leave", String(chat.id)); // можно добавить на сервере
+      socket.off("connect", joinChat);
+      if (socket.connected) {
+        socket.emit("chat:leave", String(chat.id));
+      }
     };
   }, [chat?.id]);
 
