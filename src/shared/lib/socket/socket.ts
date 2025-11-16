@@ -17,14 +17,21 @@ const socket = io(SOCKET_URL, {
 // Просто для отладки - смотрим в консоль что происходит
 socket.on("connect", () => {
   console.log("✅ Socket подключен! ID:", socket.id);
+  console.log("✅ Socket connected:", socket.connected);
 });
 
-socket.on("disconnect", () => {
-  console.log("❌ Socket отключен");
+socket.on("disconnect", (reason) => {
+  console.log("❌ Socket отключен. Причина:", reason);
 });
 
 socket.on("connect_error", (error) => {
   console.error("❌ Ошибка подключения:", error.message);
+  console.error("❌ Socket URL:", SOCKET_URL);
+});
+
+// Логируем ошибки чата
+socket.on("chat:error", (error) => {
+  console.error("❌ Chat error:", error);
 });
 
 export { socket };
